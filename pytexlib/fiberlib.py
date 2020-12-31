@@ -10,6 +10,9 @@
 import math
 import numpy as np
 
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 class fiber:
     diameter=1
     xyz=[]
@@ -63,5 +66,32 @@ class fiber:
             file.write(str(self.xyz[i,0]) + ";" + str(self.xyz[i,1]) + ";"+ str(self.xyz[i,2]) + ";\n")
         file.close()
 
-
- 
+    def load_CSV(self,filename):
+         file=open(filename,"r")
+         lines=file.readlines()
+         for i in range (9, len(lines)):
+             xyzs=lines[i].split(";")
+             x=float(xyzs[0].replace(",","."))
+             y=float(xyzs[1].replace(",","."))
+             z=float(xyzs[2].replace(",","."))
+             self.xyz.append([x,y,z])
+    
+    ## returns x, y, and z as separate vectors for ploting or so
+    def get_xyz(self):
+        x=[]
+        y=[]
+        z=[]
+        for i in range(0,len(self.xyz)):
+            x.append(self.xyz[i][0])
+            y.append(self.xyz[i][1])
+            z.append(self.xyz[i][2])
+        return x,y,z
+            
+    def plot(self):
+        fig = plt.figure(figsize=(10, 10), frameon=True, dpi=150)
+        ax = fig.add_subplot(111,projection='3d')
+        x,y,z=self.get_xyz()
+        ax.plot(x,y,z,"k-",
+        label="Fiber",
+    )
+        plt.show(block=False)
