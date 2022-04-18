@@ -8,5 +8,5 @@ For Quesitons yordan dot kyosev at tu minus dresden dot com
 * All yarn file names are stored in a master CSV file
 * The structure can be visualised with the freeware TexMind Textile Viewer (www.texmind.com)
 * Or transfered to another software packages with the full versions of the TexMind software
-
+* For get started: copy all files on your local drive and start textile_test.py
 
