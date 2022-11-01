@@ -11,8 +11,8 @@ fi.append_point(12,2,3)
 fi.append_point(22,2,3)
 
 fi2=fiber()
-fi.setcolour(123,230,230)
-fi.diameter=2
+fi2.setcolour(123,230,230)
+fi2.diameter=2
 for i in range (0,10):
     fi2.append_point(10*math.sin(i),3*math.cos(i),i)
 
