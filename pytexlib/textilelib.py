@@ -14,6 +14,8 @@ from fiberlib import *
 from yarnlib import *
 from copy import deepcopy
 
+#for 3D install vtk and pyvista
+
 class textile:
     yarns=[]
     name="textile"
@@ -50,6 +52,20 @@ class textile:
             file.write(self.fibfinames[i] + "\n")
 
         file.close
-        
-        
-
+    
+	def plot(self):
+        # write all fiber files and collect all fibernames
+        nryarns=len(self.yarns)
+        for i in range (0,nryarns):
+            for ifib in range (0, len(self.yarns[i].fiberfilenames)):
+                self.yarns[i].fiberfilenames[ifib])	
+				poly = pv.PolyData()
+				poly.points = self.yarns[i].fibers[i].xyz
+				the_cell = np.arange(0, len(points), dtype=np.int_)
+				the_cell = np.insert(the_cell, 0, len(points))
+				poly.lines = the_cell
+				
+				polyline = polyline_from_points(points)
+				polyline["scalars"] = np.arange(polyline.n_points)
+				tube = polyline.tube(radius=0.1)
+				tube.plot(smooth_shading=True)
