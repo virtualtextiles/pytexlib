@@ -12,15 +12,15 @@ fi.append_point(22,2,3)
 
 fi2=fiber()
 fi2.setcolour(123,230,230)
-fi2.diameter=2
+fi2.diameter=3
 for i in range (0,10):
-    fi2.append_point(10*math.sin(i),3*math.cos(i),i)
+    fi2.append_point(1.4*math.sin(i),1.4*math.cos(i),i)
 
 fi3=fiber()
 fi3.setcolour(123,130,230)
 fi3.diameter=2
 for i in range (0,10):
-    fi3.append_point(1*math.sin(i),3*math.cos(i),i)
+    fi3.append_point(0.2 + 2.8*math.sin(i+3),3*math.cos(i*0.9+3),i)
 
 
 ya=yarn()

@@ -58,17 +58,25 @@ class textile:
         file.close
 
     def plot(self):
+        # Initialize the plotter
+        plotter = pv.Plotter()
         # write all fiber files and collect all fibernames
         nryarns = len(self.yarns)
         for i in range(0, nryarns):
             for ifib in range(0, len(self.yarns[i].fiberfilenames)):
                 poly = pv.PolyData()
-                poly.points = self.yarns[i].fibers[i].xyz
+                poly.points = self.yarns[i].fibers[ifib].xyz
                 the_cell = np.arange(0, len(poly.points), dtype=np.int_)
                 the_cell = np.insert(the_cell, 0, len(poly.points))
                 poly.lines = the_cell
 
                 # polyline = polyline_from_points(points)
                 poly["scalars"] = np.arange(poly.n_points)
-                tube = poly.tube(radius=0.1)
-                tube.plot(smooth_shading=True)
+                tube = poly.tube(radius=self.yarns[i].fibers[ifib].diameter/2, n_sides=16)
+                
+                plotter.add_mesh(tube, color=[self.yarns[i].fibers[ifib].red/255, self.yarns[i].fibers[ifib].green/255, self.yarns[i].fibers[ifib].blue/255], opacity=0.8, label=str(i) + " " + str(ifib))
+                #tube.plot(smooth_shading=True)
+        # Add a legend
+        plotter.add_legend()
+        # Display the plot
+        plotter.show()
