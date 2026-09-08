@@ -11,3 +11,4 @@ For Quesitons yordan dot kyosev at tu minus dresden dot com
 * or transfered to another software packages with the full versions of the TexMind software
 * For get started: copy all files on your local drive and start textile_test.py
 
+--> Papers Strutex

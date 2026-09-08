@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+[project]
+name = "pytexlib"
+version = "0.1.1"
+authors = [
+  { name="Yordan Kyosev", email="yordan.kyosev@tu-dresden.de" },
+  { name="Anselm Naake", email="anselm.naake@tu-dresden.de" }
+]
+description = "PYTEXLIB - OPEN SOURCE PYTHON LIBRARY FOR SCRIPTING TEXTILE STRUCTURES"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Issues = "https://github.com/virtualtextiles/pytexlib/issues"
