@@ -3,7 +3,7 @@ requires = ["hatchling >= 1.26"]
 build-backend = "hatchling.build"
 [project]
 name = "pytexlib"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
   { name="Yordan Kyosev", email="yordan.kyosev@tu-dresden.de" },
   { name="Anselm Naake", email="anselm.naake@tu-dresden.de" }
