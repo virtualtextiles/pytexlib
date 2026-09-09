@@ -69,7 +69,7 @@ class Textile:
                 for f_idx, fiber in enumerate(yarn.fibers):
 
                     fiber_file_name = (
-                        f"{self.name}_{yarn_group.name}_{yarn.name}_{fiber.name}"
+                        f"{self.name}_{yarn_group.name}_{yarn.name}_{fiber.name}_({yg_idx}{yg_idx}{f_idx})"
                     )
                     fiber_file_uri = os.path.join(
                         reco_export_directory, fiber_file_name
@@ -88,7 +88,7 @@ class Textile:
             reco_export_directory, reco_master_file_name
         )
 
-        with open(reco_master_file_name, "w") as file:
+        with open(reco_master_file_uri, "w") as file:
             file.write("Version 2.4.Muster;  RECO Master File\n")
             file.write("1;" + str(1) + ";" + str(1) + "\n")
             file.write(f"{nr_of_yarn_files}\n")
@@ -239,26 +239,16 @@ class Textile:
                 fiber.green = g
                 fiber.blue = b
 
-    # def plot(self): #TODO
-    #     # Initialize the plotter
-    #     plotter = pv.Plotter()
-    #     # write all fiber files and collect all fibernames
-    #     nryarn_groups = len(self.yarn_groups)
-    #     for i in range(0, nryarn_groups):
-    #         for ifib in range(0, len(self.yarn_groups[i].fiberfilenames)):
-    #             poly = pv.PolyData()
-    #             poly.points = self.yarn_groups[i].fibers[ifib].xyz
-    #             the_cell = np.arange(0, len(poly.points), dtype=np.int_)
-    #             the_cell = np.insert(the_cell, 0, len(poly.points))
-    #             poly.lines = the_cell
+    # def plot(self,backend="vedo"): #TODO
+    #     '''
+    #     backends=["vedo","matplotlib"]
+    #     '''
+    #     if backend=="Vedo":
+    #         vplt_textile=vedo.Plotter()
+    #         vplt_textile.add(self.as_vedo_assembly())
+            
+    #         vplt_textile.show().interactive().close()
 
-    #             # polyline = polyline_from_points(points)
-    #             poly["scalars"] = np.arange(poly.n_points)
-    #             tube = poly.tube(radius=self.yarn_groups[i].fibers[ifib].diameter/2, n_sides=16)
+        
+        
 
-    #             plotter.add_mesh(tube, color=[self.yarn_groups[i].fibers[ifib].red/255, self.yarn_groups[i].fibers[ifib].green/255, self.yarn_groups[i].fibers[ifib].blue/255], opacity=0.8, label=str(i) + " " + str(ifib))
-    #             #tube.plot(smooth_shading=True)
-    #     # Add a legend
-    #     plotter.add_legend()
-    #     # Display the plot
-    #     plotter.show()

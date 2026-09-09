@@ -10,7 +10,6 @@ class YarnGroup:
             yarns=[]
         
         self.yarns:list[Yarn]=yarns
-        self.fiberfilenames=[]
         self.name:str=name
         
     
