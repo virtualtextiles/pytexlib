@@ -161,9 +161,14 @@ class Fiber:
         return yarn_tube
     
     def make_resolution_assembly(self,show_points=False):
-        yarn_line = vedo.Line(self.xyz)
-        yarn_line.c((self.red, self.green, self.blue))
-        yarn_line_segments=yarn_line.generate_segments()
+
+        
+        # Get pairs of consecutive points
+        pairs = np.stack((self.xyz[:-1], self.xyz[1:]), axis=1)
+        first_elements = pairs[:,0]
+        second_elements = pairs[:,1]
+        yarn_line_segments=vedo.Lines(first_elements,second_elements)
+
         yarn_line_segments.celldata["distance"] = self.segment_distances
         yarn_line_segments.cmap("rainbow")        
         return yarn_line_segments
