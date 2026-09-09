@@ -195,23 +195,23 @@ class Fiber:
         self.xyz=resampled
 
     
-    def resample_polyline_by_spacing(self, spacing):
-        '''
-        linear interpolation with a given spacing
-        '''
+    # def resample_polyline_by_spacing(self, spacing):
+    #     '''
+    #     linear interpolation with a given spacing
+    #     '''
         
-        points=self.xyz
-        seg_lengths = np.linalg.norm(np.diff(points, axis=0), axis=1)
-        arc_length = np.concatenate([[0], np.cumsum(seg_lengths)])
-        unique_arc, unique_idx = np.unique(arc_length, return_index=True)
-        unique_points = points[unique_idx]
-        interp_x = interp1d(unique_arc, unique_points[:,0])
-        interp_y = interp1d(unique_arc, unique_points[:,1])
-        interp_z = interp1d(unique_arc, unique_points[:,2])
-        # The fix: use np.arange to guarantee minimum spacing
-        new_arc = np.arange(0, unique_arc[-1] + 1e-10, spacing)
-        resampled = np.stack([interp_x(new_arc), interp_y(new_arc), interp_z(new_arc)], axis=-1)
-        self.xyz=resampled
+    #     points=self.xyz
+    #     seg_lengths = np.linalg.norm(np.diff(points, axis=0), axis=1)
+    #     arc_length = np.concatenate([[0], np.cumsum(seg_lengths)])
+    #     unique_arc, unique_idx = np.unique(arc_length, return_index=True)
+    #     unique_points = points[unique_idx]
+    #     interp_x = interp1d(unique_arc, unique_points[:,0])
+    #     interp_y = interp1d(unique_arc, unique_points[:,1])
+    #     interp_z = interp1d(unique_arc, unique_points[:,2])
+    #     # The fix: use np.arange to guarantee minimum spacing
+    #     new_arc = np.arange(0, unique_arc[-1] + 1e-10, spacing)
+    #     resampled = np.stack([interp_x(new_arc), interp_y(new_arc), interp_z(new_arc)], axis=-1)
+    #     self.xyz=resampled
     
     def fit_b_spline(self,order=3,smoothing=0,n_points=50):
         '''
@@ -224,3 +224,83 @@ class Fiber:
         # print(np.hstack([x_spline,y_spline,z_spline]))
         xyz_new=np.array([*zip(x_spline, y_spline, z_spline)])
         self.xyz=xyz_new
+        
+    def resample_polyline_by_min_spacing(self, spacing):
+        """
+        Resample a 3D polyline such that no segment is shorter than the given spacing.
+        
+        Parameters:
+            points (ndarray): Nx3 array of 3D points representing the polyline.
+            spacing (float): Minimum spacing between consecutive points.
+        
+        Returns:
+            ndarray: Resampled polyline points.
+        """
+        points=self.xyz
+        # Compute segment lengths and cumulative arc-length
+        seg_lengths = np.linalg.norm(np.diff(points, axis=0), axis=1)
+        arc_length = np.concatenate([[0], np.cumsum(seg_lengths)])
+        
+        # Remove duplicate arc-lengths (and corresponding points)
+        unique_arc, unique_idx = np.unique(arc_length, return_index=True)
+        unique_points = points[unique_idx]
+        
+        # Build interpolators for x, y, z coordinates
+        interp_x = interp1d(unique_arc, unique_points[:, 0])
+        interp_y = interp1d(unique_arc, unique_points[:, 1])
+        interp_z = interp1d(unique_arc, unique_points[:, 2])
+        
+        # Generate new arc-length positions with a cumulative approach
+        new_arc = [0]  # Start at the beginning of the polyline
+        current_arc = 0
+        while current_arc + spacing <= unique_arc[-1]:
+            current_arc += spacing
+            new_arc.append(current_arc)
+        
+        # # Ensure the last point is included if it doesn't align perfectly
+        if new_arc[-1] < unique_arc[-1]:
+            new_arc.append(unique_arc[-1])
+        
+        # Evaluate interpolators at the new arc-length positions
+        new_arc = np.array(new_arc)
+        resampled = np.stack([interp_x(new_arc), interp_y(new_arc), interp_z(new_arc)], axis=-1)
+        
+        self.xyz = resampled
+        
+    def remove_segments_by_length(self, min_distance=None, max_distance=None):
+        """
+        Remove points from a polyline if the segment length is shorter than `min_distance`
+        or longer than `max_distance`.
+
+        Parameters:
+            points (ndarray): Nx3 array of 3D points representing the polyline.
+            min_distance (float): Minimum allowed segment length.
+            max_distance (float): Maximum allowed segment length.
+
+        Returns:
+            ndarray: Modified polyline points with short and long segments removed.
+        """
+        
+        if min_distance==None:
+            min_distance=min(self.segment_distances)
+
+        if max_distance==None:
+            max_distance=max(self.segment_distances)            
+        
+        points = self.xyz
+        
+        # Initialize a list to store the filtered points
+        filtered_points = [points[0]]  # Always keep the first point
+
+        for i in range(1, len(points)):
+            # Calculate the distance between the current point and the last kept point
+            segment_length = np.linalg.norm(points[i] - filtered_points[-1])
+
+            # Keep the point only if the segment length is within the allowed range
+            if min_distance <= segment_length <= max_distance:
+                filtered_points.append(points[i])
+            else:
+                # Optionally, log or print the skipped point for debugging
+                # print(f"Removing point {points[i]} due to segment length {segment_length:.2f} not in range [{min_distance}, {max_distance}]")
+                pass
+        self.xyz=np.array(filtered_points)
