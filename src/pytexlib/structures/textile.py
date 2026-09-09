@@ -99,7 +99,27 @@ class Textile:
         return vedo.Assembly([yg.as_vedo_assembly() for yg in self.yarn_groups])
 
     def make_resolution_assembly(self):
-        return vedo.Assembly([yg.make_resolution_assembly() for yg in self.yarn_groups])
+        
+        a=vedo.Assembly([yg.make_resolution_assembly() for yg in self.yarn_groups])
+
+        segment_distances=self.segment_distances
+
+        min_segment_distance=min(segment_distances)
+        max_segment_distance=max(segment_distances)
+
+        scalarbar_made=False
+        scalarbar=None
+
+        for yg_assembly in a.objects:
+            for y_assembly in yg_assembly.objects:
+                for f_idx,f in enumerate(y_assembly.objects):
+                    f.lw(2)
+                    f.cmap("rainbow",vmin=min_segment_distance,vmax=max_segment_distance)
+                    
+                    if not scalarbar_made:
+                        scalarbar=f.add_scalarbar("Segment Length")
+                        scalarbar_made=True
+        return a,scalarbar
     
     def normalize_scale(self):
         # TODO!!
@@ -153,6 +173,20 @@ class Textile:
             itertools.chain.from_iterable(all_fibers_unflattened)
         )
         return all_fibers_flattened
+
+    @property
+    def segment_distances(self):
+        '''
+        flat array with segment distances of all fibers
+        useful for getting min/max values etc
+        '''
+        segment_distances=[]
+        for yg_idx, yarn_group in enumerate(self.yarn_groups):
+            for ya_idx, yarn in enumerate(yarn_group.yarns):
+                for f_idx, fiber in enumerate(yarn.fibers):
+                    segment_distances.append(fiber.segment_distances)
+        segment_distances=np.concat(segment_distances)
+        return segment_distances
 
     def colormap_yarn_groups(self):
         '''

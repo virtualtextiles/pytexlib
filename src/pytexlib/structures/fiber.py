@@ -9,12 +9,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 import vedo
 
+import numpy as np
+from scipy.interpolate import interp1d,splprep, splev
 
-class Fiber:
-    diameter: float = 1
-    xyz: np.ndarray = np.array([])
-    _xyz_original: np.ndarray = np.array([])
-    
+class Fiber:    
     def __init__(
         self,
         xyz=None,
@@ -30,7 +28,7 @@ class Fiber:
         if color==None:
             color=[12,60,199]
         
-        self._xyz_initial = xyz.copy()
+        # self._xyz_initial = np.copy(xyz)
         self.xyz = xyz
         self.diameter = diameter
         self.E = E
@@ -58,14 +56,23 @@ class Fiber:
     def nr_of_points(self):
         return self.xyz.shape[0]
 
-    # def add_points_from_separate_vectors(self, d, x, y, z):
-    #     '''
-    #     TODO Move this somwhere sensible
-    #     '''
-    #     self.xyz = np.hstack([x,y,z])
-    #     self.diameter = d
-        
+    @property
+    def point_distances(self):
+        distances=np.sqrt(np.sum(np.diff(self.xyz,axis=0)**2,axis=1))
+        return distances
+    
+    @property
+    def segment_distances(self):
+        '''calculate the distances of all polyline sections        
+        '''
+        return np.sqrt(np.sum(np.diff(self.xyz, axis=0)**2, axis=1))
 
+    @property
+    def length(self):
+        '''length of the whole polyline
+        '''
+        return np.sum(self.segment_distances)
+    
     def append_point(self, x, y, z):
         if len(self.xyz) < 1:
             self.xyz = np.array([[x, y, z]])
@@ -112,13 +119,25 @@ class Fiber:
         """
         return [self.xyz[:, i] for i in range(3)]
 
-    def equal_interpolation(self,length):
+    def equal_spaced_interpolation(self,nr_of_points):
         '''
-        Pass a length with which the points are resampled along the line.
+        Resample the polyline equally with a given number of points
         '''
         
+        cumulative_dist= np.insert(np.cumsum(self.segment_distances), 0, 0)
+        f_interp = interp1d(cumulative_dist, self.xyz, axis=0, kind='linear')
+        # # Generate evenly spaced target distances
+        total_length = cumulative_dist[-1]
+        uniform_dist = np.linspace(0, total_length, nr_of_points)
+        resampled_points = f_interp(uniform_dist)
+        self.xyz=resampled_points
         
-    
+    # def reset_xyz_data(self):
+    #     '''
+    #     Reset XYZ to original input
+    #     '''
+    #     self.xyz=self._xyz_initial.copy() 
+   
     
     def plot_3d(self):
         fig = plt.figure(figsize=(10, 10), frameon=True, dpi=150)
@@ -141,11 +160,62 @@ class Fiber:
         yarn_tube.name = self.name
         return yarn_tube
     
-    def make_resolution_assembly(self):
+    def make_resolution_assembly(self,show_points=False):
         yarn_line = vedo.Line(self.xyz)
         yarn_line.c((self.red, self.green, self.blue))
-        yarn_points= vedo.Points(self.xyz)
+        yarn_line_segments=yarn_line.generate_segments()
+        yarn_line_segments.celldata["distance"] = self.segment_distances
+        yarn_line_segments.cmap("rainbow")        
+        return yarn_line_segments
+    
+    def resample_polyline_by_count(self, num_points):
+        '''
+        linear interpolation, with a given amount of points
+        '''
+        points=self.xyz
+        # Compute segment lengths and cumulative arc-length
+        seg_lengths = np.linalg.norm(np.diff(points, axis=0), axis=1)
+        arc_length = np.concatenate([[0], np.cumsum(seg_lengths)])
+        # Remove duplicate arc-lengths (and corresponding points)
+        unique_arc, unique_idx = np.unique(arc_length, return_index=True)
+        unique_points = points[unique_idx]
+        # Build interpolators
+        interp_x = interp1d(unique_arc, unique_points[:,0])
+        interp_y = interp1d(unique_arc, unique_points[:,1])
+        interp_z = interp1d(unique_arc, unique_points[:,2])
+        # Generate new arc-lengths
+        new_arc = np.linspace(0, unique_arc[-1], num_points)
+        # Evaluate interpolators
+        resampled = np.stack([interp_x(new_arc), interp_y(new_arc), interp_z(new_arc)], axis=-1)
+        self.xyz=resampled
+
+    
+    def resample_polyline_by_spacing(self, spacing):
+        '''
+        linear interpolation with a given spacing
+        '''
         
-        return vedo.Assembly(yarn_line,yarn_points)
+        points=self.xyz
+        seg_lengths = np.linalg.norm(np.diff(points, axis=0), axis=1)
+        arc_length = np.concatenate([[0], np.cumsum(seg_lengths)])
+        unique_arc, unique_idx = np.unique(arc_length, return_index=True)
+        unique_points = points[unique_idx]
+        interp_x = interp1d(unique_arc, unique_points[:,0])
+        interp_y = interp1d(unique_arc, unique_points[:,1])
+        interp_z = interp1d(unique_arc, unique_points[:,2])
+        # The fix: use np.arange to guarantee minimum spacing
+        new_arc = np.arange(0, unique_arc[-1] + 1e-10, spacing)
+        resampled = np.stack([interp_x(new_arc), interp_y(new_arc), interp_z(new_arc)], axis=-1)
+        self.xyz=resampled
     
-    
+    def fit_b_spline(self,order=3,smoothing=0,n_points=50):
+        '''
+        b-spline interpolation with a given number of points
+        '''
+        tck, u = splprep(self.xyz.T, s=smoothing, k=order)
+        # 3. Evaluate the spline at fine intervals
+        u_fine = np.linspace(0, 1, n_points)
+        x_spline, y_spline, z_spline = splev(u_fine, tck)
+        # print(np.hstack([x_spline,y_spline,z_spline]))
+        xyz_new=np.array([*zip(x_spline, y_spline, z_spline)])
+        self.xyz=xyz_new
