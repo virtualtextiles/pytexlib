@@ -1,6 +1,15 @@
 # pytexlib
 Minimalistic, pure Python Library for easy preparation of yarn or fiber axis of textiles and similar products. 
 (C) Y. Kyosev, A. Naake, TU Dresden, 2022-2026
+
+
+## How to install
+
+> [!IMPORTANT]
+> This library is still under development.It is currently not available on the official Python Package Index. Instead, it is available on test.pypi.org: https://test.pypi.org/project/pytexlib/
+
+```pip install -i https://test.pypi.org/simple/ pytexlib```
+
 ## MIT License  
 https://opensource.org/licenses/MIT
 
@@ -24,20 +33,5 @@ Application in teaching
 Application in product development
 * Storck, J. L., Feldmann, B. A., & Kyosev, Y. (2023). Design tool for automated crocheting of fabrics. Communications in Development and Assembling of Textile Products, 4(2), 254–272. https://doi.org/10.25367/cdatp.2023.4.p254-272
 
-## How to install
-You need following packages:
-numpy
-vedo
-mathplotlib
-scipy.interpolate
 
 
-Firs install the library
-python.exe -m pip install d:\code\pytexlib\  
-In case your python is not in the system path use something like:
-C:\Users\python_path\python.exe -m pip install C:\Users\pathtopytexilb\git\pytexlib
-
-After that run
-
-
-ImportError: numpy.core.multiarray failed to import

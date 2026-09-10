@@ -17,6 +17,14 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "numpy",
+  "vedo",
+  "scipy",
+  "matplotlib",
+]
+
 
 [project.urls]
 Issues = "https://github.com/virtualtextiles/pytexlib/issues"
+
